@@ -12,12 +12,16 @@ export interface GithubRepo {
 }
 
 export async function getGithubRepos(username: string): Promise<GithubRepo[]> {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github.mercy-preview+json",
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
+
   const res = await fetch(
     `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`,
-    {
-      headers: { Accept: "application/vnd.github.mercy-preview+json" },
-      next: { revalidate: 3600 }, // revalidate every hour
-    }
+    { headers, next: { revalidate: 3600 } }
   );
   if (!res.ok) return [];
   return res.json();
